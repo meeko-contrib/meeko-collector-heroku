@@ -1,17 +1,24 @@
-// Copyright (c) 2014 The cider-collector-heroku AUTHORS
+// Copyright (c) 2014 The meeko-collector-heroku AUTHORS
 //
-// Use of this source code is governed by The MIT License
+// Use of this source code is governed by the MIT License
 // that can be found in the LICENSE file.
 
 package main
 
-import receiver "github.com/salsita-cider/cider-webhook-receiver"
+import (
+	"github.com/meeko-contrib/meeko-collector-heroku/handler"
+
+	"github.com/meeko-contrib/go-meeko-webhook-receiver/receiver"
+	"github.com/meeko/go-meeko/agent"
+)
 
 func main() {
-	receiver.ListenAndServe(&HerokuWebhookHandler{
-		receiver.Logger,
-		func(eventType string, eventObject interface{}) error {
-			return receiver.PubSub.Publish(eventType, eventObject)
-		},
+	var (
+		logger = agent.Logging()
+		pubsub = agent.PubSub()
+	)
+	receiver.ListenAndServe(&handler.WebhookHandler{
+		logger,
+		pubsub.Publish,
 	})
 }

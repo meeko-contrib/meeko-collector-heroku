@@ -1,0 +1,14 @@
+{
+  "name": "meeko-collector-heroku",
+  "version": "0.1.0",
+  "description": "Meeko collector for Heroku webhooks",
+  "variables": {
+    "LISTEN_ADDRESS": {
+      "usage": "TCP network address to listen on; format [HOST]:PORT"
+    },
+    "ACCESS_TOKEN": {
+      "usage": "token to be used for webhook authentication",
+      "secret": true
+    }
+  }
+}

@@ -1,18 +1,18 @@
-// Copyright (c) 2014 The cider-collector-heroku AUTHORS
+// Copyright (c) 2014 The meeko-collector-heroku AUTHORS
 //
-// Use of this source code is governed by The MIT License
+// Use of this source code is governed by the MIT License
 // that can be found in the LICENSE file.
 
-package main
+package handler
 
 import (
 	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
-
-	"github.com/cider/go-cider/cider/services/logging"
 )
+
+const EventType = "heroku.deployment"
 
 const (
 	statusUnprocessableEntity = 422
@@ -42,12 +42,12 @@ func (event *HerokuEvent) Validate() error {
 	return nil
 }
 
-type HerokuWebhookHandler struct {
-	logger  *logging.Service
-	forward func(eventType string, eventObject interface{}) error
+type WebhookHandler struct {
+	Logger  Logger
+	Forward func(eventType string, eventObject interface{}) error
 }
 
-func (handler *HerokuWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (handler *WebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Read the event object.
 	event := &HerokuEvent{
 		App:      r.FormValue("app"),
@@ -59,17 +59,17 @@ func (handler *HerokuWebhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Re
 	}
 	if err := event.Validate(); err != nil {
 		http.Error(w, err.Error(), statusUnprocessableEntity)
-		handler.logger.Warn("POST from %v: %v", r.RemoteAddr, err)
+		handler.Logger.Warn("POST from %v: %v", r.RemoteAddr, err)
 		return
 	}
 
 	// Publish the event.
-	if err := handler.forward("heroku.deploy", event); err != nil {
+	if err := handler.Forward(EventType, event); err != nil {
 		http.Error(w, "Event Not Published", http.StatusInternalServerError)
-		handler.logger.Critical(err)
+		handler.Logger.Critical(err)
 		return
 	}
 
-	handler.logger.Infof("POST from %v: Forwarding heroku.deploy", r.URL)
+	handler.Logger.Infof("POST from %v: Forwarding %v", r.URL, EventType)
 	w.WriteHeader(http.StatusAccepted)
 }

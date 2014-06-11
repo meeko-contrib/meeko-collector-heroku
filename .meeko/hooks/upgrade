@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -xe
+
+# Clean the Godeps workspace so that everything is rebuilt again.
+# This is just a weird behaviour of Go, it is somehow not rebuilding everything.
+pkg="./Godeps/_workspace/pkg"
+[ -d "$pkg" ] && rm -R "$pkg"
+
+# Assemble and install the executable.
+godep go install -v
